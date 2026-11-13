@@ -596,8 +596,9 @@ def main():
             lines = [("✓  kolbascii %s is installed" % state.get("version", ""), GREEN, True),
                      ("", TEXT, False),
                      ("Run it right now, in this window:" if state.get("ready_now") else "Try it:", DIM, False),
-                     ("  kolbascii xmas_tree", GRAD[1], True),
+                     ("  kolbascii halloween", GRAD[1], True),
                      ("  kolbascii thanksgiving", GRAD[1], True),
+                     ("  kolbascii xmas_tree", GRAD[1], True),
                      ("  kolbascii list", GRAD[1], True)]
             if state.get("reload"):
                 lines += [("", TEXT, False),
