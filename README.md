@@ -141,6 +141,7 @@ curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh 
 | `KOLBASCII_HOME` | Where the files go. Default `~/.kolbascii`. |
 | `KOLBASCII_BIN` | Where the command goes. Default: the first suitable folder already on your `PATH` (see above), else `~/.local/bin`. |
 | `KOLBASCII_BRANCH` | Install from another branch. Default `main`. |
+| `KOLBASCII_TARBALL` | Install from this tarball URL instead of the GitHub branch. |
 
 From a clone, `./install.sh` installs your local copy instead of downloading.
 

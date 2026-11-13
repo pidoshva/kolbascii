@@ -8,7 +8,9 @@
 #   --no-modify-path   don't touch your shell startup file
 #
 # Environment overrides: KOLBASCII_HOME (default ~/.kolbascii),
-# KOLBASCII_BIN (default ~/.local/bin), KOLBASCII_BRANCH (default main).
+# KOLBASCII_BIN (default: first writable ~/.local/bin, ~/bin, /opt/homebrew/bin
+# or /usr/local/bin already on PATH, else ~/.local/bin), KOLBASCII_BRANCH
+# (default main), KOLBASCII_TARBALL (install from this tarball URL instead).
 set -eu
 
 # --- find a Python 3.8+ ------------------------------------------------------
