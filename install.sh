@@ -63,8 +63,10 @@ import time
 
 REPO = "pidoshva/kolbascii"
 BRANCH = os.environ.get("KOLBASCII_BRANCH", "main")
-HOME_DIR = os.path.expanduser(os.environ.get("KOLBASCII_HOME", "~/.kolbascii"))
-BIN_DIR = os.path.expanduser(os.environ.get("KOLBASCII_BIN", "~/.local/bin"))
+HOME_DIR = os.path.abspath(os.path.expanduser(os.environ.get("KOLBASCII_HOME", "~/.kolbascii")))
+BIN_DIR = os.path.abspath(os.path.expanduser(os.environ.get("KOLBASCII_BIN", "~/.local/bin")))
+MANIFEST = os.path.join(HOME_DIR, ".manifest")
+PACKAGE_DIR = os.path.join(HOME_DIR, "kolbascii")
 TARBALL = os.environ.get("KOLBASCII_TARBALL",
                          "https://codeload.github.com/%s/tar.gz/refs/heads/%s" % (REPO, BRANCH))
 LOCAL = os.environ.get("KOLBASCII_LOCAL_SRC") if not os.environ.get("KOLBASCII_TARBALL") else ""
@@ -336,6 +338,46 @@ def fail_box(err):
 state = {}
 
 
+def read_manifest():
+    paths, opts = [], {}
+    try:
+        with open(MANIFEST) as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if os.path.isabs(line):
+                    paths.append(line)
+                elif "=" in line:
+                    k, v = line.split("=", 1)
+                    opts[k.strip()] = v.strip()
+    except OSError:
+        pass
+    return paths, opts
+
+
+def in_home(p):
+    return p == HOME_DIR or p.startswith(HOME_DIR.rstrip(os.sep) + os.sep)
+
+
+def is_package(d):
+    try:
+        with open(os.path.join(d, "__main__.py"), errors="ignore") as fh:
+            return "kolbascii" in fh.read(400)
+    except OSError:
+        return False
+
+
+def is_launcher(p):
+    if os.path.islink(p):
+        return True
+    try:
+        with open(p, errors="ignore") as fh:
+            return os.path.isfile(p) and "kolbascii" in fh.read(400)
+    except OSError:
+        return False
+
+
 def step_check(ctx):
     v = sys.version_info
     if not LOCAL and not shutil.which("curl"):
@@ -363,7 +405,7 @@ def step_download(ctx):
     tgz = os.path.join(tmp, "kolbascii.tar.gz")
     proc = subprocess.Popen(["curl", "-fsSL", "--retry", "2", "-o", tgz, TARBALL],
                             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
-    expected = 60 * 1024
+    expected = 32 * 1024
     while proc.poll() is None:
         if os.path.exists(tgz):
             ctx.progress = min(0.95, os.path.getsize(tgz) / expected)
@@ -389,16 +431,26 @@ def step_download(ctx):
 
 def step_files(ctx):
     src = state["src"]
-    dest = os.path.join(HOME_DIR, "kolbascii")
+    dest = PACKAGE_DIR
+    prev, _ = read_manifest()
+    if os.path.lexists(dest) and dest not in prev and not is_package(dest):
+        raise StepFailed(tilde(dest) + " already exists and isn't a kolbascii install.",
+                         "Set KOLBASCII_HOME to an empty or new folder.")
     os.makedirs(HOME_DIR, exist_ok=True)
-    if os.path.isdir(dest):
+    if os.path.islink(dest) or os.path.isfile(dest):
+        os.remove(dest)
+    elif os.path.isdir(dest):
         shutil.rmtree(dest)
     shutil.copytree(os.path.join(src, "kolbascii"), dest,
                     ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "._*", ".DS_Store"))
+    owned = [dest]
     for extra in ("README.md", "LICENSE", "install.sh"):
         p = os.path.join(src, extra)
-        if os.path.exists(p):
-            shutil.copy2(p, os.path.join(HOME_DIR, extra))
+        target = os.path.join(HOME_DIR, extra)
+        if os.path.exists(p) and (target in prev or not os.path.lexists(target)):
+            shutil.copy2(p, target)
+            owned.append(target)
+    state["owned"] = owned
     import compileall
     import contextlib
     import io
@@ -426,13 +478,19 @@ def step_command(ctx):
     with open(path, "w") as fh:
         fh.write(LAUNCHER % {"home": HOME_DIR, "py": sys.executable})
     os.chmod(path, 0o755)
+    launchers = [path]
     alias = os.path.join(BIN_DIR, "kolbaskii")              # forgiving spelling
-    if os.path.islink(alias) or not os.path.exists(alias):
+    if os.path.islink(alias) or not os.path.lexists(alias):
         if os.path.islink(alias):
             os.remove(alias)
         os.symlink(path, alias)
-    with open(os.path.join(HOME_DIR, ".manifest"), "w") as fh:
-        fh.write(path + "\n" + alias + "\n")
+        launchers.append(alias)
+    lines = ["# kolbascii install manifest: everything listed here is removed on uninstall",
+             "bin_dir=" + BIN_DIR,
+             "no_modify_path=" + ("1" if NO_PATH else "0")]
+    lines += launchers + state.get("owned", []) + [MANIFEST]
+    with open(MANIFEST, "w") as fh:
+        fh.write("\n".join(lines) + "\n")
     state["launcher"] = path
     ctx.note = tilde(path)
 
@@ -488,28 +546,42 @@ def step_verify(ctx):
 
 # -------------------------------------------------------------- uninstall steps
 def step_remove_cmd(ctx):
-    manifest = os.path.join(HOME_DIR, ".manifest")
-    paths = []
-    if os.path.exists(manifest):
-        paths = [l.strip() for l in open(manifest) if l.strip()]
-    paths += [os.path.join(BIN_DIR, "kolbascii"), os.path.join(BIN_DIR, "kolbaskii")]
+    paths, opts = read_manifest()
+    paths = [p for p in paths if not in_home(p)]
+    for d in (opts.get("bin_dir"), BIN_DIR):
+        if d:
+            paths += [os.path.join(d, "kolbascii"), os.path.join(d, "kolbaskii")]
     removed = 0
     for p in dict.fromkeys(paths):
-        if os.path.islink(p):
-            os.remove(p)
-            removed += 1
-        elif os.path.isfile(p) and "kolbascii" in open(p, errors="ignore").read(400):
+        if is_launcher(p):
             os.remove(p)
             removed += 1
     ctx.note = "%d launcher%s removed" % (removed, "" if removed == 1 else "s")
 
 
 def step_remove_files(ctx):
-    if os.path.exists(os.path.join(HOME_DIR, "kolbascii", "__main__.py")):
-        shutil.rmtree(HOME_DIR)
+    paths, _ = read_manifest()
+    targets = [p for p in paths if in_home(p) and p != HOME_DIR]
+    if is_package(PACKAGE_DIR):
+        targets.append(PACKAGE_DIR)
+    if os.path.lexists(MANIFEST):
+        targets.append(MANIFEST)
+    removed = 0
+    for p in dict.fromkeys(targets):
+        if os.path.isdir(p) and not os.path.islink(p):
+            shutil.rmtree(p)
+            removed += 1
+        elif os.path.lexists(p):
+            os.remove(p)
+            removed += 1
+    try:
+        os.rmdir(HOME_DIR)
         ctx.note = tilde(HOME_DIR) + " removed"
-    else:
-        ctx.note = "nothing at " + tilde(HOME_DIR)
+    except OSError:
+        if os.path.isdir(HOME_DIR) and removed:
+            ctx.note = "removed kolbascii files, kept " + tilde(HOME_DIR) + " (it has other files)"
+        else:
+            ctx.note = "nothing at " + tilde(HOME_DIR)
 
 
 def step_clean_path(ctx):
