@@ -18,12 +18,14 @@
 
 <table align="center">
   <tr>
-    <td align="center"><img src="docs/xmas_tree.gif" alt="kolbascii xmas_tree" width="400"></td>
-    <td align="center"><img src="docs/thanksgiving.gif" alt="kolbascii thanksgiving" width="400"></td>
+    <td align="center"><img src="docs/halloween.gif" alt="kolbascii halloween" width="290"></td>
+    <td align="center"><img src="docs/thanksgiving.gif" alt="kolbascii thanksgiving" width="290"></td>
+    <td align="center"><img src="docs/xmas_tree.gif" alt="kolbascii xmas_tree" width="290"></td>
   </tr>
   <tr>
-    <td align="center"><code>kolbascii xmas_tree</code></td>
+    <td align="center"><code>kolbascii halloween</code></td>
     <td align="center"><code>kolbascii thanksgiving</code></td>
+    <td align="center"><code>kolbascii xmas_tree</code></td>
   </tr>
 </table>
 
@@ -40,6 +42,8 @@ curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh 
 **2. Run it** right away, in the same window (make it big, full screen is best):
 
 ```sh
+kolbascii halloween
+kolbascii thanksgiving
 kolbascii xmas_tree
 ```
 
@@ -51,9 +55,27 @@ kolbascii xmas_tree
 
 <br>
 
-## 🎄 Animations
+## 🎃 Animations
 
 <table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/halloween.png" alt="Halloween graveyard">
+    </td>
+    <td width="50%" valign="top">
+      <h3><code>kolbascii halloween</code></h3>
+      A graveyard under a full moon. Tombstones rise out of the earth and a dead tree claws its way up, then:
+      <ul>
+        <li>green spirits drift up from the graves and spiral into a 3D pumpkin</li>
+        <li>its stem grows, a vine curls, and it <b>carves its own face</b>: eyes, nose, then a toothy grin</li>
+        <li>a candle lights inside, flickering through the face and onto everything nearby</li>
+        <li>bats burst out of its mouth and circle the graveyard</li>
+        <li>ghosts fade in between the graves, a spider drops on its thread</li>
+        <li>fog rolls across the ground, clouds cross the moon, and lightning cracks the sky</li>
+      </ul>
+      <sub>also: <code>spooky</code> · <code>jackolantern</code> · <code>graveyard</code> · <code>boo</code></sub>
+    </td>
+  </tr>
   <tr>
     <td width="50%" valign="top">
       <img src="docs/xmas_tree.png" alt="Christmas tree">

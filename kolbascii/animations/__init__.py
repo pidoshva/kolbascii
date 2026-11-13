@@ -14,6 +14,12 @@ ANIMATIONS = {
         "about": "a vortex of autumn leaves becomes a pumpkin, with gourds, corn and wheat",
         "aliases": ("turkey", "pumpkin", "harvest", "autumn", "fall"),
     },
+    "halloween": {
+        "module": "kolbascii.animations.halloween",
+        "title": "Halloween graveyard",
+        "about": "spirits rise into a jack-o'-lantern that carves its own face, with bats, ghosts and lightning",
+        "aliases": ("spooky", "jack_o_lantern", "jackolantern", "graveyard", "boo"),
+    },
 }
 
 
