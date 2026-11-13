@@ -37,7 +37,7 @@
 curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh | bash
 ```
 
-**2. Open a new terminal tab**, make the window big (full screen is best), and run:
+**2. Run it** right away, in the same window (make it big, full screen is best):
 
 ```sh
 kolbascii xmas_tree
@@ -112,13 +112,15 @@ Names are forgiving: typos get a *did you mean*, and `kolbaskii` works just as w
 
 <p align="center"><img src="docs/installer.png" alt="the kolbascii installer" width="680"></p>
 
-It takes about four seconds and does six things, each with its own progress bar:
+It takes about four seconds, downloads about 30 KB, and does six things, each with its own progress bar:
 
 1. checks for Python 3.8+ (already there on macOS with the developer tools, and on almost every Linux)
-2. downloads kolbascii into `~/.kolbascii`
-3. installs the files
-4. creates the `kolbascii` command in `~/.local/bin`
-5. puts `~/.local/bin` on your `PATH` if needed, inside a clearly marked block in your shell startup file
+2. downloads kolbascii
+3. installs the files into `~/.kolbascii`
+4. creates the `kolbascii` command in a folder that's **already on your `PATH`**
+   (`~/.local/bin`, `~/bin`, or Homebrew's `bin`), so it works the moment the installer finishes
+5. only if none of those exists, uses `~/.local/bin` and adds it to your `PATH` in a clearly
+   marked block in your shell startup file (then open a new tab, or run the `source` line it prints)
 6. runs the new command once to make sure it works
 
 <details>
@@ -136,7 +138,7 @@ curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh 
 | `--no-modify-path` | Don't touch your shell startup file; the installer prints the `export` line to add yourself. |
 | `--uninstall` | Remove everything the installer added. Same as `kolbascii uninstall`. |
 | `KOLBASCII_HOME` | Where the files go. Default `~/.kolbascii`. |
-| `KOLBASCII_BIN` | Where the command goes. Default `~/.local/bin`. |
+| `KOLBASCII_BIN` | Where the command goes. Default: the first of `~/.local/bin`, `~/bin`, `/opt/homebrew/bin`, `/usr/local/bin` that is on your `PATH` and writable. |
 | `KOLBASCII_BRANCH` | Install from another branch. Default `main`. |
 
 From a clone, `./install.sh` installs your local copy instead of downloading.
@@ -151,8 +153,8 @@ From a clone, `./install.sh` installs your local copy instead of downloading.
 kolbascii uninstall
 ```
 
-Removes `~/.kolbascii`, the `kolbascii` and `kolbaskii` commands, and the marked `PATH` block
-in your shell startup file.
+Removes the kolbascii files, the `kolbascii` and `kolbaskii` commands, and the marked `PATH`
+block in your shell startup file, if one was added. Nothing else is touched.
 
 </details>
 

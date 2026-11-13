@@ -12,6 +12,7 @@ import sys
 
 from . import INSTALL_URL, REPO, __version__
 from .animations import ANIMATIONS, load, resolve
+from .engine import color_code
 
 LOGO = [
     "██╗  ██╗ ██████╗ ██╗     ██████╗  █████╗ ███████╗ ██████╗██╗██╗",
@@ -29,7 +30,7 @@ COLOR = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
 def rgb(c, s, bold=False):
     if not COLOR:
         return s
-    return "\x1b[%s38;2;%d;%d;%dm%s\x1b[0m" % ("1;" if bold else "", c[0], c[1], c[2], s)
+    return ("\x1b[1m" if bold else "") + color_code(tuple(c)) + s + "\x1b[0m"
 
 
 def grad(k):
@@ -105,29 +106,52 @@ def home():
     return os.environ.get("KOLBASCII_HOME", os.path.expanduser("~/.kolbascii"))
 
 
+def manifest():
+    import json
+    try:
+        with open(os.path.join(home(), ".kolbascii-manifest.json")) as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return {}
+
+
+def update():
+    """Re-run the published installer with the same choices as the original install."""
+    env = dict(os.environ, KOLBASCII_HOME=home())
+    m = manifest()
+    if m.get("bin_dir"):
+        env["KOLBASCII_BIN"] = m["bin_dir"]
+    flags = " -s -- --no-modify-path" if m.get("no_modify_path") else ""
+    sys.exit(subprocess.call("curl -fsSL %s | bash%s" % (INSTALL_URL, flags), shell=True, env=env))
+
+
 def uninstall():
     root = home()
-    script = os.path.join(root, "install.sh")
-    if os.path.exists(script):    # the installer also removes the PATH line it added
-        sys.exit(subprocess.call(["bash", script, "--uninstall"]))
-    manifest = os.path.join(root, ".manifest")
+    script = os.path.join(root, "kolbascii", "install.sh")   # written by the installer, inside our own folder
+    if os.path.exists(script) and manifest():  # it also removes the PATH line it added
+        sys.exit(subprocess.call(["bash", script, "--uninstall"], env=dict(os.environ, KOLBASCII_HOME=root)))
     removed = []
-    if os.path.exists(manifest):
-        with open(manifest) as fh:
-            paths = [line.strip() for line in fh if line.strip()]
-        for path in paths:
-            if os.path.islink(path):
+    for path in manifest().get("files", []):
+        if os.path.islink(path):
+            os.remove(path)
+            removed.append(path)
+        elif os.path.isfile(path):
+            with open(path, errors="ignore") as fh:
+                ours = "kolbascii launcher" in fh.read(400)
+            if ours:
                 os.remove(path)
                 removed.append(path)
-            elif os.path.isfile(path):
-                with open(path, errors="ignore") as fh:
-                    ours = "kolbascii" in fh.read(400)
-                if ours:
-                    os.remove(path)
-                    removed.append(path)
-    if os.path.isdir(root) and os.path.exists(os.path.join(root, "kolbascii", "__main__.py")):
-        shutil.rmtree(root)
-        removed.append(root)
+    pkg = os.path.join(root, "kolbascii")
+    if os.path.exists(os.path.join(pkg, "__main__.py")):
+        shutil.rmtree(pkg)
+        removed.append(pkg)
+        mf = os.path.join(root, ".kolbascii-manifest.json")
+        if os.path.exists(mf):
+            os.remove(mf)
+        try:
+            os.rmdir(root)                      # only if nothing else lives there
+        except OSError:
+            pass
     if not removed:
         print("Nothing to remove: no kolbascii install found at " + root)
         return
@@ -150,7 +174,7 @@ def main(argv=None):
         print_list()
         return
     if cmd == "update":
-        sys.exit(subprocess.call("curl -fsSL %s | bash" % INSTALL_URL, shell=True))
+        update()
     if cmd == "uninstall":
         uninstall()
         return
