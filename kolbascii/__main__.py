@@ -149,9 +149,9 @@ def update():
 def uninstall():
     root = home()
     script = os.path.join(root, "install.sh")
-    if os.path.exists(script):    # the installer also removes the PATH line it added
-        sys.exit(subprocess.call(["bash", script, "--uninstall"], env=dict(os.environ, KOLBASCII_HOME=root)))
     paths, _ = read_manifest(root)
+    if script in paths and os.path.isfile(script):    # the installer also removes the PATH line it added
+        sys.exit(subprocess.call(["bash", script, "--uninstall"], env=dict(os.environ, KOLBASCII_HOME=root)))
     inside = root.rstrip(os.sep) + os.sep
     removed = []
     for path in paths:

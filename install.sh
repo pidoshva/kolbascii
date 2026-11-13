@@ -64,8 +64,45 @@ import time
 REPO = "pidoshva/kolbascii"
 BRANCH = os.environ.get("KOLBASCII_BRANCH", "main")
 HOME_DIR = os.path.abspath(os.path.expanduser(os.environ.get("KOLBASCII_HOME", "~/.kolbascii")))
-BIN_DIR = os.path.abspath(os.path.expanduser(os.environ.get("KOLBASCII_BIN", "~/.local/bin")))
 MANIFEST = os.path.join(HOME_DIR, ".manifest")
+LAUNCHER_MARK = "kolbascii launcher, written by the kolbascii installer"
+PATH_DIRS = set(os.path.realpath(p) for p in os.environ.get("PATH", "").split(os.pathsep) if p)
+
+
+def is_launcher(p):
+    try:
+        with open(p, errors="ignore") as fh:
+            return os.path.isfile(p) and LAUNCHER_MARK in fh.read(400)
+    except OSError:
+        return False
+
+
+def on_path(d):
+    return os.path.realpath(d) in PATH_DIRS
+
+
+def pick_bin_dir():
+    if os.environ.get("KOLBASCII_BIN"):
+        return os.path.abspath(os.path.expanduser(os.environ["KOLBASCII_BIN"]))
+    try:
+        with open(MANIFEST) as fh:
+            for line in fh:
+                if line.startswith("bin_dir="):
+                    prev = line.split("=", 1)[1].strip()
+                    if os.path.isabs(prev) and is_launcher(os.path.join(prev, "kolbascii")):
+                        return prev
+    except OSError:
+        pass
+    for c in ("~/.local/bin", "~/bin", "/opt/homebrew/bin", "/usr/local/bin"):
+        d = os.path.abspath(os.path.expanduser(c))
+        cmd = os.path.join(d, "kolbascii")
+        if (os.path.isdir(d) and on_path(d) and os.access(d, os.W_OK | os.X_OK)
+                and (not os.path.lexists(cmd) or is_launcher(cmd))):
+            return d
+    return os.path.abspath(os.path.expanduser("~/.local/bin"))
+
+
+BIN_DIR = pick_bin_dir()
 PACKAGE_DIR = os.path.join(HOME_DIR, "kolbascii")
 TARBALL = os.environ.get("KOLBASCII_TARBALL",
                          "https://codeload.github.com/%s/tar.gz/refs/heads/%s" % (REPO, BRANCH))
@@ -368,21 +405,13 @@ def is_package(d):
         return False
 
 
-def is_launcher(p):
-    if os.path.islink(p):
-        return True
-    try:
-        with open(p, errors="ignore") as fh:
-            return os.path.isfile(p) and "kolbascii" in fh.read(400)
-    except OSError:
-        return False
-
 
 def step_check(ctx):
     v = sys.version_info
     if not LOCAL and not shutil.which("curl"):
         raise StepFailed("curl is needed to download kolbascii.", "Install curl and run the installer again.")
-    for d in (os.path.dirname(HOME_DIR.rstrip("/")) or "/", os.path.dirname(BIN_DIR.rstrip("/")) or "/"):
+    for target in (HOME_DIR, BIN_DIR):
+        d = target if os.path.isdir(target) else (os.path.dirname(target.rstrip("/")) or "/")
         if os.path.isdir(d) and not os.access(d, os.W_OK):
             raise StepFailed("Can't write to " + tilde(d) + ".",
                              "Set KOLBASCII_HOME / KOLBASCII_BIN to folders you own.")
@@ -475,13 +504,19 @@ PYTHONPATH="$KOLBASCII_HOME${PYTHONPATH:+:$PYTHONPATH}" exec "$PY" -m kolbascii 
 def step_command(ctx):
     os.makedirs(BIN_DIR, exist_ok=True)
     path = os.path.join(BIN_DIR, "kolbascii")
+    if os.path.lexists(path) and not is_launcher(path):
+        raise StepFailed(tilde(path) + " already exists and isn't the kolbascii launcher.",
+                         "Move it away, or set KOLBASCII_BIN to another folder.")
+    if os.path.islink(path):
+        os.remove(path)
     with open(path, "w") as fh:
         fh.write(LAUNCHER % {"home": HOME_DIR, "py": sys.executable})
     os.chmod(path, 0o755)
     launchers = [path]
     alias = os.path.join(BIN_DIR, "kolbaskii")              # forgiving spelling
-    if os.path.islink(alias) or not os.path.lexists(alias):
-        if os.path.islink(alias):
+    dangling = os.path.islink(alias) and not os.path.exists(alias)
+    if not os.path.lexists(alias) or dangling or (os.path.islink(alias) and is_launcher(alias)):
+        if os.path.lexists(alias):
             os.remove(alias)
         os.symlink(path, alias)
         launchers.append(alias)
@@ -510,9 +545,8 @@ def rc_file():
 
 
 def step_path(ctx):
-    on_path = any(os.path.realpath(p) == os.path.realpath(BIN_DIR)
-                  for p in os.environ.get("PATH", "").split(os.pathsep) if p)
-    if on_path:
+    if on_path(BIN_DIR):
+        state["on_path"] = True
         ctx.note = tilde(BIN_DIR) + " is already on your PATH"
         return
     if NO_PATH:
@@ -546,16 +580,17 @@ def step_verify(ctx):
 
 # -------------------------------------------------------------- uninstall steps
 def step_remove_cmd(ctx):
-    paths, opts = read_manifest()
-    paths = [p for p in paths if not in_home(p)]
+    recorded, opts = read_manifest()
+    recorded = [p for p in recorded if not in_home(p)]
+    paths = list(recorded)
     for d in (opts.get("bin_dir"), BIN_DIR):
         if d:
             paths += [os.path.join(d, "kolbascii"), os.path.join(d, "kolbaskii")]
-    removed = 0
-    for p in dict.fromkeys(paths):
-        if is_launcher(p):
-            os.remove(p)
-            removed += 1
+    doomed = [p for p in dict.fromkeys(paths)
+              if is_launcher(p) or (p in recorded and os.path.islink(p) and not os.path.exists(p))]
+    for p in doomed:
+        os.remove(p)
+    removed = len(doomed)
     ctx.note = "%d launcher%s removed" % (removed, "" if removed == 1 else "s")
 
 
@@ -630,11 +665,15 @@ def main():
                    ("Thanks for decorating with us.", DIM, False)])
         else:
             lines = [("✓  kolbascii %s is ready" % state.get("version", ""), GREEN, True),
-                     ("", TEXT, False),
-                     ("Try it now:", DIM, False),
-                     ("  kolbascii xmas_tree", GRAD[1], True),
-                     ("  kolbascii thanksgiving", GRAD[1], True),
-                     ("  kolbascii list", GRAD[1], True)]
+                     ("", TEXT, False)]
+            if state.get("on_path"):
+                lines += [("It's on your PATH, so it works in this", TEXT, False),
+                          ("terminal right away. Try it now:", TEXT, False)]
+            else:
+                lines += [("Try it now:", DIM, False)]
+            lines += [("  kolbascii xmas_tree", GRAD[1], True),
+                      ("  kolbascii thanksgiving", GRAD[1], True),
+                      ("  kolbascii list", GRAD[1], True)]
             if state.get("reload"):
                 lines += [("", TEXT, False),
                           ("Open a new terminal tab first, or run:", DIM, False),

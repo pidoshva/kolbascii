@@ -117,8 +117,11 @@ It takes about four seconds and does six things, each with its own progress bar:
 1. checks for Python 3.8+ (already there on macOS with the developer tools, and on almost every Linux)
 2. downloads kolbascii into `~/.kolbascii`
 3. installs the files
-4. creates the `kolbascii` command in `~/.local/bin`
-5. puts `~/.local/bin` on your `PATH` if needed, inside a clearly marked block in your shell startup file
+4. creates the `kolbascii` command in the first of `~/.local/bin`, `~/bin`, `/opt/homebrew/bin` or
+   `/usr/local/bin` that is already on your `PATH` and writable without `sudo`, so it works in the
+   same terminal as soon as the installer finishes
+5. only if none of those qualifies: uses `~/.local/bin` and puts it on your `PATH` inside a clearly
+   marked block in your shell startup file (open a new tab, or run the `source` line it prints)
 6. runs the new command once to make sure it works
 
 <details>
@@ -136,7 +139,7 @@ curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh 
 | `--no-modify-path` | Don't touch your shell startup file; the installer prints the `export` line to add yourself. |
 | `--uninstall` | Remove everything the installer added. Same as `kolbascii uninstall`. |
 | `KOLBASCII_HOME` | Where the files go. Default `~/.kolbascii`. |
-| `KOLBASCII_BIN` | Where the command goes. Default `~/.local/bin`. |
+| `KOLBASCII_BIN` | Where the command goes. Default: the first suitable folder already on your `PATH` (see above), else `~/.local/bin`. |
 | `KOLBASCII_BRANCH` | Install from another branch. Default `main`. |
 
 From a clone, `./install.sh` installs your local copy instead of downloading.
@@ -151,8 +154,8 @@ From a clone, `./install.sh` installs your local copy instead of downloading.
 kolbascii uninstall
 ```
 
-Removes `~/.kolbascii`, the `kolbascii` and `kolbaskii` commands, and the marked `PATH` block
-in your shell startup file.
+Removes the files it installed in `~/.kolbascii`, its own `kolbascii` and `kolbaskii` commands
+(nothing else in that folder), and the marked `PATH` block in your shell startup file.
 
 </details>
 
