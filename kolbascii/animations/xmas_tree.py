@@ -3,17 +3,10 @@
 then gets garland, beads, baubles, candy canes, fairy lights, presents, a star
 and a greeting.
 
-Pure Python, no dependencies. Needs a truecolor terminal (iTerm2, Ghostty,
-WezTerm, kitty, VS Code, recent Terminal.app). Bigger window = more detail.
-
-    python3 xmas_tree.py                 space pause · r restart · q quit
+Run it with:  kolbascii xmas_tree
 """
 import math
 import random
-import select
-import shutil
-import sys
-import time
 
 TAU = math.tau
 GROUND, Y0, Y1 = 0.0, 0.10, 1.40       # ground, lowest branches, tree top
@@ -638,88 +631,3 @@ class Scene:
         ts = f"t {t:05.1f}"
         text(0, cols - len(ts) - 1, ts, ACCENT)
         return chs, cos_
-
-
-def to_ansi(chs, cos_, cols, rows):
-    out = []
-    last = None
-    for y in range(rows):
-        row = []
-        base = y * cols
-        for x in range(cols):
-            ch = chs[base + x]
-            if ch is None or ch == " ":
-                row.append(" ")
-                continue
-            c = cos_[base + x]
-            if c != last:
-                row.append("\x1b[38;2;%d;%d;%dm" % c)
-                last = c
-            row.append(ch)
-        out.append("".join(row))
-    return "\x1b[H" + "\n".join(out)
-
-
-def main():
-    frames = None
-    if "--frames" in sys.argv:  # testing: render N frames at a fixed 1/30 s step and exit
-        frames = int(sys.argv[sys.argv.index("--frames") + 1])
-    cols, rows = shutil.get_terminal_size((120, 50))
-    scene = Scene(cols, rows)
-    out = sys.stdout
-    tty_mode = None
-    if sys.stdin.isatty() and frames is None:
-        import termios
-        import tty
-        fd = sys.stdin.fileno()
-        tty_mode = termios.tcgetattr(fd)
-        tty.setcbreak(fd)
-    bg = "\x1b[48;2;%d;%d;%dm" % BG
-    out.write("\x1b[?1049h\x1b[?25l" + bg + "\x1b[2J")
-    t, paused, last, n = 0.0, False, time.time(), 0
-    try:
-        while True:
-            now = time.time()
-            dt = min(now - last, 0.1)
-            last = now
-            if frames is not None:
-                dt = 1 / FPS
-            if not paused:
-                t += dt
-            if tty_mode is not None:
-                while select.select([sys.stdin], [], [], 0)[0]:
-                    k = sys.stdin.read(1)
-                    if k in ("q", "Q", "\x1b"):
-                        return
-                    if k == " ":
-                        paused = not paused
-                    if k in ("r", "R"):
-                        t = 0.0
-            c2, r2 = shutil.get_terminal_size((cols, rows))
-            if frames is None and (c2, r2) != (cols, rows):
-                cols, rows = c2, r2
-                scene = Scene(cols, rows)
-                out.write("\x1b[2J")
-            chs, cos_ = scene.render(t)
-            out.write(bg + to_ansi(chs, cos_, cols, rows))
-            out.flush()
-            n += 1
-            if frames is not None:
-                if n >= frames:
-                    return
-                continue
-            spent = time.time() - now
-            if spent < 1 / FPS:
-                time.sleep(1 / FPS - spent)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        if tty_mode is not None:
-            import termios
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, tty_mode)
-        out.write("\x1b[0m\x1b[?25h\x1b[?1049l")
-        out.flush()
-
-
-if __name__ == "__main__":
-    main()
