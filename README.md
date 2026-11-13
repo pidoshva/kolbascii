@@ -1,58 +1,129 @@
-<h1 align="center">kolbascii</h1>
-
 <p align="center">
-  <b>Animated ASCII decorations for your terminal.</b><br>
-  One command, and the window you're in turns into a little 3D scene built out of characters.
+  <img src="docs/banner.svg" alt="kolbascii" width="760">
 </p>
 
 <p align="center">
-  <img src="docs/xmas_tree.gif" alt="kolbascii xmas_tree" width="48%">
-  <img src="docs/thanksgiving.gif" alt="kolbascii thanksgiving" width="48%">
+  <b>Turn any terminal window into a little 3D scene made of characters.</b><br>
+  <sub>One command · no dependencies · runs right in the window you're in</sub>
 </p>
 
-## Quick start
+<p align="center">
+  <img alt="macOS | Linux" src="https://img.shields.io/badge/macOS%20%7C%20Linux-0d1017?style=flat-square&logo=apple&logoColor=ffd678&labelColor=0d1017&color=ff9966">
+  <img alt="Python 3.8+" src="https://img.shields.io/badge/python-3.8%2B-ff9966?style=flat-square&logo=python&logoColor=ffd678&labelColor=0d1017">
+  <img alt="zero dependencies" src="https://img.shields.io/badge/dependencies-zero-ffd678?style=flat-square&labelColor=0d1017">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-ff5e62?style=flat-square&labelColor=0d1017">
+</p>
 
-**1. Install** (macOS or Linux, one line):
+<br>
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/xmas_tree.gif" alt="kolbascii xmas_tree" width="400"></td>
+    <td align="center"><img src="docs/thanksgiving.gif" alt="kolbascii thanksgiving" width="400"></td>
+  </tr>
+  <tr>
+    <td align="center"><code>kolbascii xmas_tree</code></td>
+    <td align="center"><code>kolbascii thanksgiving</code></td>
+  </tr>
+</table>
+
+<br>
+
+## ⚡ Quick start
+
+**1. Install** with one line (macOS or Linux):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh | bash
 ```
 
-**2. Open a new terminal tab**, make the window big, and run:
+**2. Open a new terminal tab**, make the window big (full screen is best), and run:
 
 ```sh
-kolbascii xmas_tree        # 3D Christmas tree
-kolbascii thanksgiving     # Thanksgiving harvest
-kolbascii                  # see everything available
+kolbascii xmas_tree
 ```
 
-Press **q** to quit, **space** to pause, **r** to restart.
+| Key | While an animation plays |
+| :---: | --- |
+| <kbd>space</kbd> | pause / resume |
+| <kbd>r</kbd> | restart from the beginning |
+| <kbd>q</kbd> | quit and get your terminal back exactly as it was |
 
-No dependencies, nothing to configure. Leave it running on a spare monitor or between
-builds, show it off on a screen share, or just enjoy it for half a minute.
+<br>
 
----
+## 🎄 Animations
 
-## Install
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/xmas_tree.png" alt="Christmas tree">
+    </td>
+    <td width="50%" valign="top">
+      <h3><code>kolbascii xmas_tree</code></h3>
+      A tall 3D spruce grows out of the snow layer by layer, then decorates itself while it slowly turns:
+      <ul>
+        <li>gold tinsel and a red-and-silver bead garland spiral up</li>
+        <li>46 baubles with caps and shine, plus striped candy canes</li>
+        <li>220 fairy lights switch on one by one, twinkling and glowing</li>
+        <li>wrapped presents with ribbons and bows appear underneath</li>
+        <li>a star lands with a flash, and <b>MERRY CHRISTMAS</b> types out</li>
+      </ul>
+      <sub>also: <code>xmas</code> · <code>christmas</code> · <code>tree</code></sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/thanksgiving.png" alt="Thanksgiving harvest">
+    </td>
+    <td width="50%" valign="top">
+      <h3><code>kolbascii thanksgiving</code></h3>
+      A funnel of autumn leaves spins up and winds itself into a big ribbed pumpkin, one leaf at a time:
+      <ul>
+        <li>the stem grows, a vine curls, two broad leaves unfold</li>
+        <li>a small pumpkin, a cream one and a striped gourd pop in</li>
+        <li>a cob of multicoloured corn appears kernel by kernel</li>
+        <li>a tied wheat bundle grows up beside them</li>
+        <li><b>HAPPY THANKSGIVING</b> types out while leaves keep falling</li>
+      </ul>
+      <sub>also: <code>pumpkin</code> · <code>turkey</code> · <code>harvest</code> · <code>autumn</code></sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## 🧭 Commands
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh | bash
+kolbascii                      # logo, help and the list of animations
+kolbascii <animation>          # play it full-screen in this window
+kolbascii <animation> -s 30    # stop by itself after 30 seconds
+kolbascii random               # surprise me
+kolbascii list                 # what's available
+kolbascii update               # get the newest version and animations
+kolbascii uninstall            # remove kolbascii
 ```
 
-That's it. The installer:
+Names are forgiving: typos get a *did you mean*, and `kolbaskii` works just as well.
 
-1. checks for Python 3.8+ (already on macOS with the developer tools, and on almost every Linux)
+<br>
+
+## 📦 The installer
+
+<p align="center"><img src="docs/installer.png" alt="the kolbascii installer" width="680"></p>
+
+It takes about four seconds and does six things, each with its own progress bar:
+
+1. checks for Python 3.8+ (already there on macOS with the developer tools, and on almost every Linux)
 2. downloads kolbascii into `~/.kolbascii`
-3. adds a `kolbascii` command to `~/.local/bin`
-4. puts `~/.local/bin` on your `PATH` if it isn't there yet, inside a clearly marked block in your shell's startup file
-5. runs the new command once to make sure it works
-
-<p align="center"><img src="docs/installer.png" alt="the installer" width="70%"></p>
-
-Open a new terminal tab afterwards (or run the `source` line the installer prints) and you're set.
+3. installs the files
+4. creates the `kolbascii` command in `~/.local/bin`
+5. puts `~/.local/bin` on your `PATH` if needed, inside a clearly marked block in your shell startup file
+6. runs the new command once to make sure it works
 
 <details>
-<summary>Installer options</summary>
+<summary><b>Options</b></summary>
+<br>
 
 Pass options after `bash -s --` when piping:
 
@@ -62,7 +133,7 @@ curl -fsSL https://raw.githubusercontent.com/pidoshva/kolbascii/main/install.sh 
 
 | Option / variable | What it does |
 | --- | --- |
-| `--no-modify-path` | Don't touch your shell startup file. The installer prints the `export` line to add yourself. |
+| `--no-modify-path` | Don't touch your shell startup file; the installer prints the `export` line to add yourself. |
 | `--uninstall` | Remove everything the installer added. Same as `kolbascii uninstall`. |
 | `KOLBASCII_HOME` | Where the files go. Default `~/.kolbascii`. |
 | `KOLBASCII_BIN` | Where the command goes. Default `~/.local/bin`. |
@@ -72,88 +143,61 @@ From a clone, `./install.sh` installs your local copy instead of downloading.
 
 </details>
 
-## Usage
+<details>
+<summary><b>Uninstall</b></summary>
+<br>
 
 ```sh
-kolbascii                       # logo, help and the list of animations
-kolbascii <animation>           # play it full-screen in this window
-kolbascii <animation> -s 30     # stop by itself after 30 seconds
-kolbascii random                # surprise me
-kolbascii list                  # what's available
-kolbascii update                # get the newest version and animations
-kolbascii uninstall             # remove kolbascii
+kolbascii uninstall
 ```
 
-While an animation plays: **space** pauses, **r** restarts, **q** (or Esc, or Ctrl+C) quits and
-gives you your terminal back exactly as it was.
+Removes `~/.kolbascii`, the `kolbascii` and `kolbaskii` commands, and the marked `PATH` block
+in your shell startup file.
 
-Names are forgiving: `kolbascii xmas`, `kolbascii christmas`, `kolbascii pumpkin` and
-`kolbascii turkey` all work, typos get a "did you mean", and `kolbaskii` works as well as
-`kolbascii`.
+</details>
 
-## Animations
+<br>
 
-### `xmas_tree`
+## 🖥️ Requirements
 
-<img src="docs/xmas_tree.png" alt="Christmas tree" width="60%" align="right">
-
-A tall 3D spruce grows out of the snow, layer by layer, with a bright growth front sweeping
-up the branches. Then, while it slowly turns:
-
-- a gold tinsel garland spirals up, and a red-and-silver bead garland spirals the other way
-- 46 baubles pop on, red, gold, silver and blue, each with a cap and a shine
-- striped candy canes hang from the branches
-- 220 warm fairy lights switch on one by one, twinkle, and glow onto the needles around them
-- presents appear underneath, wrapped plain, striped or dotted, with ribbons and bows
-- a star lands on top with a flash
-- **MERRY CHRISTMAS** types itself out
-
-Snow falls the whole time, and the branch tips carry a little snow of their own.
-
-<br clear="right">
-
-### `thanksgiving`
-
-<img src="docs/thanksgiving.png" alt="Thanksgiving harvest" width="60%" align="right">
-
-A funnel of autumn leaves spins up out of the ground and winds itself into a big ribbed
-pumpkin, one leaf at a time, each one flashing warm as it lands. Then:
-
-- the stem grows, a vine curls around it, and two broad leaves unfold
-- a small orange pumpkin, a cream one and a striped gourd pop in beside it
-- a cob of multicoloured corn appears kernel by kernel, with its husks
-- a tied wheat bundle grows up behind
-- **HAPPY THANKSGIVING** types itself out
-
-Leaves keep drifting down, and the ground is covered in them.
-
-<br clear="right">
-
-## Requirements
-
-- **macOS or Linux.** On Windows, use WSL.
-- **Python 3.8 or newer.** Standard library only, nothing to `pip install`.
-- **A terminal with 24-bit colour** looks best: iTerm2, Ghostty, WezTerm, kitty, Alacritty, the
-  VS Code terminal, or Terminal.app on macOS 26+. Other terminals get an automatic
+- **macOS or Linux** (on Windows, use WSL)
+- **Python 3.8+**, standard library only
+- **A terminal with 24-bit colour** looks best: iTerm2, Ghostty, WezTerm, kitty, Alacritty,
+  the VS Code terminal, or Terminal.app on macOS 26+. Other terminals get an automatic
   256-colour fallback.
-- **A big window.** The scenes scale to whatever size you give them, and the more cells you
-  give them the more detail they draw. Full screen is best.
+- **A big window.** Scenes scale to whatever size you give them, and more cells means more detail.
 
-## How it works
+<br>
 
-Each scene is a cloud of a few thousand to a few tens of thousands of 3D points: needles,
-pumpkin skin, ribbon, kernels, each with a colour, a surface normal and the time it should
-appear. Every frame the points are rotated, projected through a perspective camera and
-depth-tested into a character grid, one z-buffer per character cell.
-Lighting picks both the colour and the character. Brighter surfaces get denser glyphs
-(`.:-~=+^v*x%&#W@`), so shading comes from the characters as well as the colour.
-After that, overlay passes add things like the light glow, the star and the greeting.
-Frames go out as one ANSI string, about 30 times a second.
+## 🔬 How it works
 
-All of it is plain Python. The engine (`kolbascii/engine.py`) owns the terminal: alternate
-screen, hidden cursor, key handling, resizing, frame pacing, and restoring everything on exit.
+<details>
+<summary><b>3D, out of plain characters</b></summary>
+<br>
 
-## Make your own
+Each scene is a cloud of thousands of 3D points: needles, pumpkin skin, ribbon, corn kernels.
+Every point has a colour, a surface normal and the moment it should appear. Each frame, the
+points are rotated, projected through a perspective camera, and depth-tested into the
+character grid, with one z-buffer entry per cell.
+
+Lighting chooses both the colour and the character. Brighter surfaces get denser glyphs:
+
+```
+.:-~=+^v*x%&#W@
+```
+
+so the shading comes from the characters as well as the colour. Overlay passes then add
+glow around lights, the star and the greeting. Each frame goes out as a single ANSI string,
+about 30 times a second.
+
+The engine (`kolbascii/engine.py`) owns the terminal: alternate screen, hidden cursor, keys,
+resizing, frame pacing, and restoring everything on exit.
+
+</details>
+
+<details>
+<summary><b>Make your own animation</b></summary>
+<br>
 
 An animation is one Python file with a `Scene` class:
 
@@ -165,7 +209,7 @@ class Scene:
 
     def render(self, t):
         """t is seconds since start. Return (chars, colors): two flat lists of
-        length cols*rows. chars[i] is a single character or None, colors[i] an
+        length cols*rows. chars[i] is one character or None, colors[i] an
         (r, g, b) tuple."""
         ...
 ```
@@ -181,19 +225,14 @@ Register it in `kolbascii/animations/__init__.py`:
 },
 ```
 
-and run it with `python3 -m kolbascii fireworks`. `engine.Canvas` has helpers for the
-greeting banner and the bottom-left readout, and the two existing scenes are good templates
+then try it with `python3 -m kolbascii fireworks`. `engine.Canvas` has helpers for the
+greeting banner and the on-screen readout, and the two existing scenes are good templates
 for 3D point clouds. Pull requests with new animations are very welcome.
 
-## Uninstall
+</details>
 
-```sh
-kolbascii uninstall
-```
+<br>
 
-This removes `~/.kolbascii`, the `kolbascii` and `kolbaskii` commands, and the marked `PATH`
-block in your shell startup file.
-
-## License
-
-[MIT](LICENSE)
+<p align="center">
+  <sub>MIT licensed · made for developers who like their terminals festive</sub>
+</p>
